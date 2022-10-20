@@ -9,10 +9,11 @@ mod models;
 mod repos;
 mod routes;
 mod schema;
+mod tests;
+
 
 use crate::routes::{get_products_routes, get_users_routes};
 
-mod tests;
 
 #[actix_web::main]
 async fn main() -> Result<()> {

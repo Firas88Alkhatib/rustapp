@@ -1,1 +1,2 @@
-mod users_tests;
+mod users_endpoints_tests;
+mod utils;
