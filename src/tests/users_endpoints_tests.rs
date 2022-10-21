@@ -10,7 +10,7 @@ mod user_endpoints_tests {
         let first_name = String::from("first name") + &gen_random_string();
         let last_name = String::from("last name") + &gen_random_string();
         let user = UserDto { first_name, last_name };
-        let created_user = users_repo::create_user(user).await;
+        let created_user = users_repo::create_user(user).await.expect("unable to seed test user");
         return created_user;
     }
 

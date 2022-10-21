@@ -10,7 +10,7 @@ mod repos;
 mod routes;
 mod schema;
 mod tests;
-
+mod error_handle;
 
 use crate::routes::{get_products_routes, get_users_routes};
 
@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
         let products_routes = get_products_routes();
         App::new().service(users_routes).service(products_routes)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await
 }

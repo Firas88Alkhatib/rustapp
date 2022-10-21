@@ -10,3 +10,4 @@ actix-web = "^4"
 serde = { version = "^1", features = ["derive"] }
 diesel = { version = "2.0.0", features = ["postgres", "chrono"] }
 rand = "0.8.5"
+derive_more = "0.99.17"
