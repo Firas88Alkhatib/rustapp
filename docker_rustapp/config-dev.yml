@@ -10,6 +10,8 @@ services:
     working_dir: /app
     volumes:
       - ../:/app/
+    # cargo watch is very slow in docker
+    # command: sh -c "diesel migration run && cargo watch -q -c -x run"  
     command: sh -c "diesel migration run && cargo run"
     environment:
       - DATABASE_URL=postgres://postgresUser:postgresPassword@PostgresDb/rustapp
