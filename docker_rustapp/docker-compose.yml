@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  rustapp:
+    container_name: RustApp
+    build:
+      context: ../
+      dockerfile: ./docker_rustapp/Dockerfile
+    ports:
+      - 8080:8080
+    working_dir: /app
+    volumes:
+      - ../:/app/
+    command: sh -c "diesel migration run && cargo run"
+    environment:
+      - DATABASE_URL=postgres://postgresUser:postgresPassword@PostgresDb/rustapp
+    depends_on:
+      - application-db
+    networks:
+      - rustapp-network
+  application-db:
+    container_name: PostgresDb
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgresUser
+      - POSTGRES_PASSWORD=postgresPassword
+      - POSTGRES_DB=rustapp
+    networks:
+      - rustapp-network
+networks:
+  rustapp-network:
+    driver: bridge
