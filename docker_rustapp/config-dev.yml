@@ -1,7 +1,8 @@
 version: "3.9"
 services:
-  rustapp:
-    container_name: RustApp
+  # main service
+  rustmain:
+    container_name: RustMainService
     build:
       context: ../main/
       dockerfile: ../docker_rustapp/Dockerfile
@@ -11,21 +12,63 @@ services:
     volumes:
       - ../main:/app/
     # cargo watch is very slow in docker
-    # command: sh -c "diesel migration run && cargo watch -q -c -x run"  
+    # command: sh -c "diesel migration run && cargo watch -q -c -x run"
     command: sh -c "diesel migration run && cargo run"
     environment:
-      - DATABASE_URL=postgres://postgresUser:postgresPassword@PostgresDb/rustapp
+      - DATABASE_URL=postgres://mainUser:mainPassword@MainDb/rustMain
+      - PRODUCTS_URL=http://RustProductsService:5001/products
     depends_on:
-      - application-db
+      main-db:
+        condition: service_healthy
     networks:
       - rustapp-network
-  application-db:
-    container_name: PostgresDb
+  main-db:
+    container_name: MainDb
     image: postgres
     environment:
-      - POSTGRES_USER=postgresUser
-      - POSTGRES_PASSWORD=postgresPassword
-      - POSTGRES_DB=rustapp
+      - POSTGRES_USER=mainUser
+      - POSTGRES_PASSWORD=mainPassword
+      - POSTGRES_DB=rustMain
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mainUser -d rustMain"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rustapp-network
+  # products service
+  rustproducts:
+    container_name: RustProductsService
+    build:
+      context: ../products/
+      dockerfile: ../docker_rustapp/Dockerfile
+    ports:
+      - 5001:5001
+    working_dir: /app
+    volumes:
+      - ../products:/app/
+    # cargo watch is very slow in docker
+    # command: sh -c "diesel migration run && cargo watch -q -c -x run"
+    command: sh -c "diesel migration run && cargo run"
+    environment:
+      - DATABASE_URL=postgres://productsUser:productsPassword@ProductsDb/rustProducts
+    depends_on:
+      products-db:
+        condition: service_healthy
+    networks:
+      - rustapp-network
+  products-db:
+    container_name: ProductsDb
+    image: postgres
+    environment:
+      - POSTGRES_USER=productsUser
+      - POSTGRES_PASSWORD=productsPassword
+      - POSTGRES_DB=rustProducts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U productsUser -d rustProducts"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - rustapp-network
 networks:

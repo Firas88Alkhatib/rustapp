@@ -1,7 +1,7 @@
 version: "3.9"
 services:
-  rustapptest:
-    container_name: RustAppTest
+  rust-main-test:
+    container_name: RustMainTest
     build:
       context: ../main/
       dockerfile: ../docker_rustapp/Dockerfile
@@ -12,7 +12,7 @@ services:
       - ../main:/app/
     command: sh -c "diesel migration run && cargo test"
     environment:
-      - DATABASE_URL=postgres://testUser:testPassword@PostgresTestDb/rustapptest
+      - DATABASE_URL=postgres://testUser:testPassword@PostgresTestDb/rustmaintest
     depends_on:
       - test-db
     networks:
@@ -23,7 +23,12 @@ services:
     environment:
       - POSTGRES_USER=testUser
       - POSTGRES_PASSWORD=testPassword
-      - POSTGRES_DB=rustapptest
+      - POSTGRES_DB=rustmaintest
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testUser -d rustmaintest"]
+      interval: 5s
+      timeout: 4s
+      retries: 5
     networks:
       - rustapp-test-network
 networks:
