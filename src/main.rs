@@ -5,15 +5,14 @@ use std::io::Result;
 
 mod api;
 mod db;
+mod error_handle;
 mod models;
 mod repos;
 mod routes;
 mod schema;
 mod tests;
-mod error_handle;
 
 use crate::routes::{get_products_routes, get_users_routes};
-
 
 #[actix_web::main]
 async fn main() -> Result<()> {
