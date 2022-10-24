@@ -3,13 +3,13 @@ services:
   rustapp:
     container_name: RustApp
     build:
-      context: ../
-      dockerfile: ./docker_rustapp/Dockerfile
+      context: ../main/
+      dockerfile: ../docker_rustapp/Dockerfile
     ports:
       - 8080:8080
     working_dir: /app
     volumes:
-      - ../:/app/
+      - ../main:/app/
     # cargo watch is very slow in docker
     # command: sh -c "diesel migration run && cargo watch -q -c -x run"  
     command: sh -c "diesel migration run && cargo run"

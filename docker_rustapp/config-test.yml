@@ -3,13 +3,13 @@ services:
   rustapptest:
     container_name: RustAppTest
     build:
-      context: ../
-      dockerfile: ./docker_rustapp/Dockerfile
+      context: ../main/
+      dockerfile: ../docker_rustapp/Dockerfile
     ports:
       - 8080:8080
     working_dir: /app
     volumes:
-      - ../:/app/
+      - ../main:/app/
     command: sh -c "diesel migration run && cargo test"
     environment:
       - DATABASE_URL=postgres://testUser:testPassword@PostgresTestDb/rustapptest
