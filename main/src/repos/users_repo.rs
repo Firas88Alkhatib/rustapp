@@ -14,21 +14,17 @@ pub async fn create_user(user: UserDto) -> Result<User, Error> {
 
     return inserted_user;
 }
-pub async fn get_user(user_id: i32) -> Result<User, Error> {
-    let mut db: PgConnection = get_connection();
-    let user = users.find(user_id).first(&mut db);
-    return user;
-}
 pub async fn get_all_users() -> Result<Vec<User>, Error> {
     let mut db: PgConnection = get_connection();
     let results = users.load::<User>(&mut db);
     return results;
 }
-pub async fn delete_user(user_id: i32) -> Result<usize, Error> {
-    let mut connection: PgConnection = get_connection();
-    let result = diesel::delete(users.find(user_id)).execute(&mut connection);
-    return result;
+pub async fn get_user(user_id: i32) -> Result<User, Error> {
+    let mut db: PgConnection = get_connection();
+    let user = users.find(user_id).first(&mut db);
+    return user;
 }
+
 pub async fn update_user(user_id: i32, user: User) -> Result<User, Error> {
     let mut db: PgConnection = get_connection();
 
@@ -37,4 +33,10 @@ pub async fn update_user(user_id: i32, user: User) -> Result<User, Error> {
         .get_result::<User>(&mut db);
 
     return updated_user;
+}
+
+pub async fn delete_user(user_id: i32) -> Result<usize, Error> {
+    let mut connection: PgConnection = get_connection();
+    let result = diesel::delete(users.find(user_id)).execute(&mut connection);
+    return result;
 }
