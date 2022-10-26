@@ -1,8 +1,3 @@
-#[macro_use]
-extern crate diesel;
-use actix_web::{App, HttpServer};
-use std::io::Result;
-
 mod api;
 mod db;
 mod error_handle;
@@ -12,7 +7,11 @@ mod routes;
 mod schema;
 mod tests;
 
+#[macro_use]
+extern crate diesel;
 use crate::routes::{get_products_routes, get_users_routes};
+use actix_web::{App, HttpServer};
+use std::io::Result;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
