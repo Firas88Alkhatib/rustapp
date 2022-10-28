@@ -41,10 +41,7 @@ pub fn decode_jwt(token: &str) -> Result<Claims, ActixError> {
         .map_err(|e| ErrorUnauthorized(e.to_string()))
 }
 
-pub async fn validator(
-    req: ServiceRequest,
-    credentials: BearerAuth,
-) -> Result<ServiceRequest, (ActixError, ServiceRequest)> {
+pub async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, (ActixError, ServiceRequest)> {
     let result = decode_jwt(credentials.token());
     match result {
         Ok(claims) => {
