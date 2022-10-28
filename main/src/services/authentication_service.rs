@@ -15,7 +15,7 @@ const SECRET_KEY: &str = "SECRET";
 pub struct Claims {
     pub username: String,
     pub permissions: Vec<String>,
-    exp: i64,
+    pub exp: i64,
 }
 
 // Role - is permission with prefix "ROLE_".

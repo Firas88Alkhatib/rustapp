@@ -1,10 +1,9 @@
+use crate::db::{get_connection_pool, DbConnection, DbPool};
 use crate::error_handle::{RepositoryError, RepositoryErrorType};
 use crate::models::user::{NewUser, User, UserDto};
 use crate::schema::users::dsl::*;
 use crate::services::authentication_service::hash_password;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
-
-use crate::db::{get_connection_pool, DbConnection, DbPool};
 
 pub struct UsersRepo {
     connection_pool: DbPool,
