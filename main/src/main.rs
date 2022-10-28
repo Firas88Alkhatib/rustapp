@@ -7,7 +7,7 @@ mod repos;
 mod routes;
 mod schema;
 mod services;
-// mod tests;
+mod tests;
 mod config;
 
 #[macro_use]
