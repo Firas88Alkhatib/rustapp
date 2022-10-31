@@ -10,10 +10,7 @@ use actix_web_grants::proc_macro::has_roles;
 
 #[post("")]
 #[has_roles("USER")]
-pub async fn create_product(
-    products_repo: Data<ProductsRepo>,
-    product: Json<ProductDto>,
-) -> Result<HttpResponse, RepositoryError> {
+pub async fn create_product(products_repo: Data<ProductsRepo>, product: Json<ProductDto>) -> Result<HttpResponse, RepositoryError> {
     let new_product = products_repo.create_product(product.into_inner()).await?;
     return Ok(HttpResponse::Created().json(new_product));
 }
@@ -45,10 +42,7 @@ pub async fn update_product(
 
 #[delete("/{id}")]
 #[has_roles("USER")]
-pub async fn delete_product(
-    products_repo: Data<ProductsRepo>,
-    path: Path<i32>,
-) -> Result<HttpResponse, RepositoryError> {
+pub async fn delete_product(products_repo: Data<ProductsRepo>, path: Path<i32>) -> Result<HttpResponse, RepositoryError> {
     let product_id: i32 = path.into_inner();
     products_repo.delete_product(product_id).await?;
 
