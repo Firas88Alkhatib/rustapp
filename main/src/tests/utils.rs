@@ -1,8 +1,10 @@
+use crate::config::urls::{get_database_url, get_products_service_url};
+use crate::models::product::{Product, ProductDto};
 use crate::models::user::{User, UserDto};
+use crate::repos::products_repo::ProductsRepo;
 use crate::repos::users_repo::UsersRepo;
 use crate::services::authentication_service::{create_jwt, Claims};
 use rand::Rng;
-use std::env;
 
 #[allow(dead_code)]
 pub fn gen_random_string() -> String {
@@ -36,8 +38,18 @@ pub async fn add_test_user(permissions: Vec<&str>) -> User {
         first_name,
         last_name,
     };
-    let database_url = env::var("DATABASE_URL").unwrap_or(String::from("postgres://postgres:postgres@0.0.0.0/rustapp"));
+    let database_url = get_database_url();
     let users_repo = UsersRepo::new(database_url);
     let created_user = users_repo.create_user(user).await.expect("unable to seed test user");
     return created_user;
+}
+#[allow(dead_code)]
+pub async fn add_test_product() -> Product {
+    let products_service_url = get_products_service_url();
+    let products_repo = ProductsRepo::new(products_service_url);
+    let name = String::from("testname") + &gen_random_string();
+    let description = String::from("testdesc") + &gen_random_string();
+    let product = ProductDto { name, description };
+    let created_product = products_repo.create_product(product).await.expect("unable to create test product");
+    return created_product;
 }
