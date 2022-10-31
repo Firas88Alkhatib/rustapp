@@ -1,5 +1,5 @@
 use crate::error_handle::RepositoryError;
-use crate::models::user::{User, UserDto};
+use crate::models::user::{UpdateUserDto, User, UserDto};
 use crate::repos::users_repo::UsersRepo;
 use actix_web::{
     delete, get, post, put,
@@ -32,8 +32,18 @@ pub async fn get_user(users_repo: Data<UsersRepo>, path: Path<i32>) -> Result<Js
 
 #[put("/{id}")]
 #[has_roles("ADMIN")]
-pub async fn update_user(users_repo: Data<UsersRepo>, path: Path<i32>, user: Json<User>) -> Result<Json<User>, RepositoryError> {
-    let updated_user = users_repo.update_user(path.into_inner(), user.into_inner()).await?;
+pub async fn update_user(users_repo: Data<UsersRepo>, path: Path<i32>, user: Json<UpdateUserDto>) -> Result<Json<User>, RepositoryError> {
+    let user_id = path.into_inner();
+    let db_user = users_repo.get_user(user_id).await?;
+    let user_to_update = User {
+        id: user.id,
+        username: user.username.clone(),
+        first_name: user.first_name.clone(),
+        last_name: user.last_name.clone(),
+        roles: user.roles.clone(),
+        password: db_user.password,
+    };
+    let updated_user = users_repo.update_user(user_id, user_to_update).await?;
     return Ok(Json(updated_user));
 }
 

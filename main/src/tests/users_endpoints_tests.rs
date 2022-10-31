@@ -1,51 +1,87 @@
 #[cfg(test)]
 mod user_endpoints_tests {
-    use crate::models::user::*;
-    use crate::repos::users_repo;
-    use crate::routes::get_users_routes;
-    use crate::tests::utils::gen_random_string;
-    use actix_web::{test, App};
 
-    async fn add_test_user() -> User {
-        let first_name = String::from("first name") + &gen_random_string();
-        let last_name = String::from("last name") + &gen_random_string();
-        let user = UserDto { first_name, last_name };
-        let created_user = users_repo::create_user(user).await.expect("unable to seed test user");
-        return created_user;
+    use crate::app;
+    use crate::models::user::UserDto;
+    use crate::tests::utils::{add_test_user, gen_random_string, get_test_jwt};
+    use actix_web::{http::header, test};
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Deserialize, Serialize)]
+    struct TestUser {
+        pub id: i32,
+        pub username: String,
+        pub roles: Vec<String>,
+        pub first_name: String,
+        pub last_name: String,
     }
 
     #[actix_web::test]
     async fn test_create_user() {
+        let username = String::from("username") + &gen_random_string();
+        let password = String::from("password") + &gen_random_string();
         let first_name = String::from("first name") + &gen_random_string();
         let last_name = String::from("last name") + &gen_random_string();
-        let user = UserDto {
+        let roles = vec![String::from("ROLE_USER")];
+        let test_user = UserDto {
+            username: username.clone(),
+            password: password.clone(),
             first_name: first_name.clone(),
             last_name: last_name.clone(),
+            roles: roles.clone(),
         };
 
-        let user_routes = get_users_routes();
-        let app = test::init_service(App::new().service(user_routes)).await;
+        let app = test::init_service(app::init_app()).await;
 
         let url = "/users";
-        let req = test::TestRequest::post().uri(url).set_json(user).to_request();
+        let un_auth_req = test::TestRequest::post().uri(url).set_json(&test_user).to_request();
+        let un_auth_resp = test::call_service(&app, un_auth_req).await;
+        assert_eq!(un_auth_resp.status(), 401, "should return Unauthorized 401");
+        let forbidden_req = test::TestRequest::post()
+            .uri(url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(false)))
+            .set_json(&test_user)
+            .to_request();
+        let forbidden_resp = test::call_service(&app, forbidden_req).await;
+        assert_eq!(forbidden_resp.status(), 403, "should return Forbidden 401");
+
+        let req = test::TestRequest::post()
+            .uri(url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(true)))
+            .set_json(test_user)
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), 200, "should return 200 status code ");
-        let result: User = test::read_body_json(resp).await;
+        let result: TestUser = test::read_body_json(resp).await;
+        assert_eq!(result.username, username, "usernames should be identicals");
         assert_eq!(result.first_name, first_name, "first names should be identicals");
         assert_eq!(result.last_name, last_name, "last names should be identicals");
+        assert_eq!(result.roles, roles, "roles should be identicals");
     }
     #[actix_web::test]
     async fn test_get_all_users() {
-        let user1 = add_test_user().await;
-        let user2 = add_test_user().await;
-        let user_routes = get_users_routes();
-        let app = test::init_service(App::new().service(user_routes)).await;
+        let user1 = add_test_user(vec!["ROLE_ADMIN", "ROLE_USER"]).await;
+        let user2 = add_test_user(vec!["ROLE_ADMIN", "ROLE_USER"]).await;
+        let app = test::init_service(app::init_app()).await;
 
         let url = "/users";
-        let req = test::TestRequest::get().uri(url).to_request();
+        let un_auth_req = test::TestRequest::get().uri(url).to_request();
+        let un_auth_resp = test::call_service(&app, un_auth_req).await;
+        assert_eq!(un_auth_resp.status(), 401, "should return Unauthorized 401");
+        let forbidden_req = test::TestRequest::get()
+            .uri(url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(false)))
+            .to_request();
+        let forbidden_resp = test::call_service(&app, forbidden_req).await;
+        assert_eq!(forbidden_resp.status(), 403, "should return Forbidden 401");
+
+        let req = test::TestRequest::get()
+            .uri(url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(true)))
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), 200, "should return 200 status code ");
-        let result: Vec<User> = test::read_body_json(resp).await;
+        let result: Vec<TestUser> = test::read_body_json(resp).await;
 
         let result_user1 = result
             .iter()
@@ -60,49 +96,89 @@ mod user_endpoints_tests {
 
     #[actix_web::test]
     async fn test_get_single_user() {
-        let user = add_test_user().await;
-        let user_routes = get_users_routes();
-        let app = test::init_service(App::new().service(user_routes)).await;
+        let user = add_test_user(vec!["ROLE_USER"]).await;
+        let app = test::init_service(app::init_app()).await;
 
         let url = format!("/users/{}", user.id);
-        let req = test::TestRequest::get().uri(&url).to_request();
+        let un_auth_req = test::TestRequest::get().uri(&url).to_request();
+        let un_auth_resp = test::call_service(&app, un_auth_req).await;
+        assert_eq!(un_auth_resp.status(), 401, "should return Unauthorized 401");
+        let forbidden_req = test::TestRequest::get()
+            .uri(&url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(false)))
+            .to_request();
+        let forbidden_resp = test::call_service(&app, forbidden_req).await;
+        assert_eq!(forbidden_resp.status(), 403, "should return Forbidden 401");
+
+        let req = test::TestRequest::get()
+            .uri(&url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(true)))
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), 200, "should return 200 status code ");
-        let result: User = test::read_body_json(resp).await;
+        let result: TestUser = test::read_body_json(resp).await;
         assert_eq!(result.first_name, user.first_name, "first names should be identicals");
         assert_eq!(result.last_name, user.last_name, "last names should be identicals");
     }
     #[actix_web::test]
     async fn test_update_user() {
-        let user = add_test_user().await;
+        let test_user = add_test_user(vec!["ROLE_USER"]).await;
         let updated_first_name = String::from("first name") + &gen_random_string();
 
-        let updated_user = User {
-            id: user.id.clone(),
+        let updated_user = TestUser {
+            id: test_user.id.clone(),
+            username: test_user.username.clone(),
             first_name: updated_first_name.clone(),
-            last_name: user.last_name.clone(),
+            last_name: test_user.last_name.clone(),
+            roles: test_user.roles.clone(),
         };
 
-        let user_routes = get_users_routes();
-        let app = test::init_service(App::new().service(user_routes)).await;
+        let app = test::init_service(app::init_app()).await;
 
-        let url = format!("/users/{}", user.id);
-        let req = test::TestRequest::put().uri(&url).set_json(updated_user).to_request();
+        let url = format!("/users/{}", test_user.id);
+        let un_auth_req = test::TestRequest::put().uri(&url).set_json(&updated_user).to_request();
+        let un_auth_resp = test::call_service(&app, un_auth_req).await;
+        assert_eq!(un_auth_resp.status(), 401, "should return Unauthorized 401");
+        let forbidden_req = test::TestRequest::put()
+            .uri(&url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(false)))
+            .set_json(&updated_user)
+            .to_request();
+        let forbidden_resp = test::call_service(&app, forbidden_req).await;
+        assert_eq!(forbidden_resp.status(), 403, "should return Forbidden 401");
+
+        let req = test::TestRequest::put()
+            .uri(&url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(true)))
+            .set_json(updated_user)
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), 200, "should return 200 status code ");
-        let result: User = test::read_body_json(resp).await;
+        let result: TestUser = test::read_body_json(resp).await;
         assert_eq!(result.first_name, updated_first_name, "first name should be updated");
-        assert_eq!(result.last_name, user.last_name, "last name should not be changed");
+        assert_eq!(result.last_name, test_user.last_name, "last name should not be changed");
     }
     #[actix_web::test]
     async fn test_delete_user() {
-        let user = add_test_user().await;
+        let test_user = add_test_user(vec!["ROLE_USER"]).await;
 
-        let user_routes = get_users_routes();
-        let app = test::init_service(App::new().service(user_routes)).await;
+        let app = test::init_service(app::init_app()).await;
 
-        let url = format!("/users/{}", user.id);
-        let req = test::TestRequest::delete().uri(&url).to_request();
+        let url = format!("/users/{}", test_user.id);
+        let un_auth_req = test::TestRequest::delete().uri(&url).to_request();
+        let un_auth_resp = test::call_service(&app, un_auth_req).await;
+        assert_eq!(un_auth_resp.status(), 401, "should return Unauthorized 401");
+        let forbidden_req = test::TestRequest::delete()
+            .uri(&url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(false)))
+            .to_request();
+        let forbidden_resp = test::call_service(&app, forbidden_req).await;
+        assert_eq!(forbidden_resp.status(), 403, "should return Forbidden 401");
+
+        let req = test::TestRequest::delete()
+            .uri(&url)
+            .insert_header((header::AUTHORIZATION, get_test_jwt(true)))
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), 204, "should return NoContent 204 status code");
     }
