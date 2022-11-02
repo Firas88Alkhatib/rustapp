@@ -1,5 +1,5 @@
 use crate::models::products::{NewProduct, Product, ProductInDto};
-use crate::schema::products::dsl::*;
+use crate::schema::products::dsl::products;
 use diesel::{result::Error, QueryDsl, RunQueryDsl};
 
 use crate::db::{get_connection_pool, DbConnection, DbPool};
