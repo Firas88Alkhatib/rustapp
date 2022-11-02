@@ -4,11 +4,11 @@ use diesel::{result::Error, QueryDsl, RunQueryDsl};
 
 use crate::db::{get_connection_pool, DbConnection, DbPool};
 
-pub struct ProductRepo {
+pub struct ProductsRepo {
     connection_pool: DbPool,
 }
 
-impl ProductRepo {
+impl ProductsRepo {
     pub fn new(database_url: String) -> Self {
         let connection_pool = get_connection_pool(database_url);
         return Self { connection_pool };
@@ -48,11 +48,11 @@ impl ProductRepo {
         let result = diesel::delete(products.find(product_id)).execute(&mut connection);
         return result;
     }
-    pub async fn update_product(&self, product_id: i32, user: Product) -> Result<Product, Error> {
+    pub async fn update_product(&self, product_id: i32, product: Product) -> Result<Product, Error> {
         let mut connection = self.get_connection();
 
         let updated_product = diesel::update(products.find(product_id))
-            .set(&user)
+            .set(&product)
             .get_result::<Product>(&mut connection);
 
         return updated_product;
