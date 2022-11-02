@@ -1,4 +1,4 @@
-use crate::models::products::{NewProduct, Product, ProductDto};
+use crate::models::products::{NewProduct, Product, ProductInDto};
 use crate::schema::products::dsl::*;
 use diesel::{result::Error, QueryDsl, RunQueryDsl};
 
@@ -20,7 +20,7 @@ impl ProductRepo {
             .expect("Failed to get connection from the connection pool");
         return connection;
     }
-    pub async fn create_product(&self, product: ProductDto) -> Result<Product, Error> {
+    pub async fn create_product(&self, product: ProductInDto) -> Result<Product, Error> {
         let mut connection = self.get_connection();
 
         let new_product: NewProduct = NewProduct {

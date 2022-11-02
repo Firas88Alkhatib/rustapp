@@ -1,5 +1,5 @@
 use crate::error_handle::DatabaseError;
-use crate::models::products::{Product, ProductDto};
+use crate::models::products::{Product, ProductInDto};
 use crate::repos::Repositories;
 use actix_web::{
     delete, get, post, put,
@@ -9,7 +9,7 @@ use actix_web::{
 use diesel::result::Error;
 
 #[post("")]
-pub async fn create_product(repos: Data<Repositories>, product: Json<ProductDto>) -> Result<Json<Product>, DatabaseError> {
+pub async fn create_product(repos: Data<Repositories>, product: Json<ProductInDto>) -> Result<Json<Product>, DatabaseError> {
     let new_product = repos.products_repo.create_product(product.into_inner()).await?;
     Ok(Json(new_product))
 }
