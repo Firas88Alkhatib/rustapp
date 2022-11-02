@@ -1,6 +1,6 @@
 use crate::error_handle::DatabaseError;
 use crate::models::products::{Product, ProductDto};
-use crate::repos::products_repo::ProductRepo;
+use crate::repos::Repositories;
 use actix_web::{
     delete, get, post, put,
     web::{Data, Json, Path},
@@ -9,38 +9,34 @@ use actix_web::{
 use diesel::result::Error;
 
 #[post("")]
-pub async fn create_product(products_repo: Data<ProductRepo>, product: Json<ProductDto>) -> Result<Json<Product>, DatabaseError> {
-    let new_product = products_repo.create_product(product.into_inner()).await?;
+pub async fn create_product(repos: Data<Repositories>, product: Json<ProductDto>) -> Result<Json<Product>, DatabaseError> {
+    let new_product = repos.products_repo.create_product(product.into_inner()).await?;
     Ok(Json(new_product))
 }
 
 #[get("")]
-pub async fn get_all_products(products_repo: Data<ProductRepo>) -> Result<Json<Vec<Product>>, DatabaseError> {
-    let result_products = products_repo.get_all_products().await?;
+pub async fn get_all_products(repos: Data<Repositories>) -> Result<Json<Vec<Product>>, DatabaseError> {
+    let result_products = repos.products_repo.get_all_products().await?;
     return Ok(Json(result_products));
 }
 
 #[get("/{id}")]
-pub async fn get_product(products_repo: Data<ProductRepo>, path: Path<i32>) -> Result<Json<Product>, DatabaseError> {
+pub async fn get_product(repos: Data<Repositories>, path: Path<i32>) -> Result<Json<Product>, DatabaseError> {
     let product_id: i32 = path.into_inner();
-    let product = products_repo.get_product(product_id).await?;
+    let product = repos.products_repo.get_product(product_id).await?;
     return Ok(Json(product));
 }
 
 #[put("/{id}")]
-pub async fn update_product(
-    products_repo: Data<ProductRepo>,
-    path: Path<i32>,
-    product: Json<Product>,
-) -> Result<Json<Product>, DatabaseError> {
-    let updated_product = products_repo.update_product(path.into_inner(), product.into_inner()).await?;
+pub async fn update_product(repos: Data<Repositories>, path: Path<i32>, product: Json<Product>) -> Result<Json<Product>, DatabaseError> {
+    let updated_product = repos.products_repo.update_product(path.into_inner(), product.into_inner()).await?;
     return Ok(Json(updated_product));
 }
 
 #[delete("/{id}")]
-pub async fn delete_product(products_repo: Data<ProductRepo>, path: Path<i32>) -> Result<HttpResponse, DatabaseError> {
+pub async fn delete_product(repos: Data<Repositories>, path: Path<i32>) -> Result<HttpResponse, DatabaseError> {
     let product_id: i32 = path.into_inner();
-    let affected_rows = products_repo.delete_product(product_id).await?;
+    let affected_rows = repos.products_repo.delete_product(product_id).await?;
     match affected_rows {
         0 => Err(DatabaseError {
             error_type: Error::NotFound,
