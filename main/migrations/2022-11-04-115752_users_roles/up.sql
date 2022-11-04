@@ -6,7 +6,7 @@ CREATE TABLE
         user_id INT NOT NULL,
         role_id INT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+        FOREIGN KEY (role_id) REFERENCES roles(id)
     );
 
 -- seeding admin user relation
