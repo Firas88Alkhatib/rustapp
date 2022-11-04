@@ -40,7 +40,6 @@ pub async fn update_user(repos: Data<Repositories>, path: Path<i32>, user: Json<
         username: user.username.clone(),
         first_name: user.first_name.clone(),
         last_name: user.last_name.clone(),
-        roles: user.roles.clone(),
         password: db_user.password,
     };
     let updated_user = repos.users_repo.update_user(user_id, user_to_update).await?;

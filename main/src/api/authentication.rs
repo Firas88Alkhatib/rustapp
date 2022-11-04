@@ -25,7 +25,7 @@ pub async fn login(repos: Data<Repositories>, login_dto: Json<LoginDto>) -> Resu
         return Err(ErrorUnauthorized("invalid credentials"));
     }
 
-    let permissions = db_user.roles;
+    let permissions = db_user.roles.iter().map(|role| role.name.clone()).collect();
     let claims = Claims::new(db_user.username, permissions);
     let token = create_jwt(claims);
     return token;
