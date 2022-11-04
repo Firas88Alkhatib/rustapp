@@ -3,7 +3,7 @@ mod user_endpoints_tests {
 
     use crate::app;
     use crate::models::user::UserDto;
-    use crate::tests::utils::{add_test_user, gen_random_string, get_test_jwt};
+    use crate::tests::utils::{add_test_user, gen_random_string, get_pool, get_test_jwt};
     use actix_web::{http::header, test};
     use serde::{Deserialize, Serialize};
 
@@ -31,7 +31,7 @@ mod user_endpoints_tests {
             roles: roles.clone(),
         };
 
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = "/users";
         let un_auth_req = test::TestRequest::post().uri(url).set_json(&test_user).to_request();
@@ -62,7 +62,7 @@ mod user_endpoints_tests {
     async fn test_get_all_users() {
         let user1 = add_test_user(vec!["ROLE_ADMIN", "ROLE_USER"]).await;
         let user2 = add_test_user(vec!["ROLE_ADMIN", "ROLE_USER"]).await;
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = "/users";
         let un_auth_req = test::TestRequest::get().uri(url).to_request();
@@ -97,7 +97,7 @@ mod user_endpoints_tests {
     #[actix_web::test]
     async fn test_get_single_user() {
         let user = add_test_user(vec!["ROLE_USER"]).await;
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = format!("/users/{}", user.id);
         let un_auth_req = test::TestRequest::get().uri(&url).to_request();
@@ -133,7 +133,7 @@ mod user_endpoints_tests {
             roles: test_user.roles.clone(),
         };
 
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = format!("/users/{}", test_user.id);
         let un_auth_req = test::TestRequest::put().uri(&url).set_json(&updated_user).to_request();
@@ -162,7 +162,7 @@ mod user_endpoints_tests {
     async fn test_delete_user() {
         let test_user = add_test_user(vec!["ROLE_USER"]).await;
 
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = format!("/users/{}", test_user.id);
         let un_auth_req = test::TestRequest::delete().uri(&url).to_request();

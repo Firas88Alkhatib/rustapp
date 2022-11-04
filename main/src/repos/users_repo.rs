@@ -1,4 +1,4 @@
-use crate::db::{get_connection_pool, DbConnection, DbPool};
+use crate::db::{DbConnection, DbPool};
 use crate::error_handle::{RepositoryError, RepositoryErrorType};
 use crate::models::user::{NewUser, User, UserDto};
 use crate::schema::users::dsl::*;
@@ -10,8 +10,7 @@ pub struct UsersRepo {
 }
 
 impl UsersRepo {
-    pub fn new(database_url: String) -> Self {
-        let connection_pool = get_connection_pool(database_url);
+    pub fn new(connection_pool: DbPool) -> Self {
         return Self { connection_pool };
     }
     fn get_connection(&self) -> DbConnection {

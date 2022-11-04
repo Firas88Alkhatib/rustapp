@@ -1,5 +1,6 @@
 mod api;
 mod app;
+mod config;
 mod db;
 mod error_handle;
 mod models;
@@ -8,7 +9,6 @@ mod routes;
 mod schema;
 mod services;
 mod tests;
-mod config;
 
 #[macro_use]
 extern crate diesel;
@@ -20,15 +20,16 @@ use crate::app::init_app;
 use actix_web::HttpServer;
 // use crate::repos::products_repo::ProductsRepo;
 // use crate::repos::users_repo::UsersRepo;
+use db::get_connection_pool;
+use config::urls::get_database_url;
 
-// TODO use dependency injection instead of repos direct import
 // implement a struct for database and http client
-// fix the tests after authentication implementation
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let connection_pool = get_connection_pool(get_database_url());
     HttpServer::new(move || {
-        init_app()
+        init_app(connection_pool.clone())
         // let products_service_url = env::var("PRODUCTS_URL").unwrap_or(String::from("http://localhost:5001/products"));
         // let database_url = env::var("DATABASE_URL").unwrap_or(String::from("postgres://postgres:postgres@0.0.0.0/rustapp"));
 

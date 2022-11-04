@@ -2,15 +2,16 @@
 mod products_endpoints_tests {
     use crate::app;
     use crate::models::product::{Product, ProductDto};
-    use crate::tests::utils::{add_test_product, gen_random_string, get_test_jwt};
+    use crate::tests::utils::{add_test_product, gen_random_string, get_pool, get_test_jwt};
     use actix_web::{http::header, test};
+
     #[actix_web::test]
     async fn test_create_product() {
         let name = String::from("testname") + &gen_random_string();
         let description = String::from("testdesc") + &gen_random_string();
         let product = ProductDto { name, description };
 
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = "/products";
         let un_auth_req = test::TestRequest::post().uri(&url).set_json(&product).to_request();
@@ -33,7 +34,7 @@ mod products_endpoints_tests {
     #[actix_web::test]
     async fn test_get_single_product() {
         let product = add_test_product().await;
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = format!("/products/{}", product.id);
         let un_auth_req = test::TestRequest::get().uri(&url).to_request();
@@ -54,7 +55,7 @@ mod products_endpoints_tests {
     async fn test_get_all_product() {
         let product1 = add_test_product().await;
         let product2 = add_test_product().await;
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = "/products";
         let un_auth_req = test::TestRequest::get().uri(&url).to_request();
@@ -89,7 +90,7 @@ mod products_endpoints_tests {
             description: product.description.clone(),
         };
 
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = format!("/products/{}", product.id);
         let un_auth_req = test::TestRequest::put().uri(&url).set_json(&updated_product).to_request();
@@ -111,7 +112,7 @@ mod products_endpoints_tests {
     #[actix_web::test]
     async fn test_delete_product() {
         let product = add_test_product().await;
-        let app = test::init_service(app::init_app()).await;
+        let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = format!("/products/{}", product.id);
         let un_auth_req = test::TestRequest::delete().uri(&url).to_request();

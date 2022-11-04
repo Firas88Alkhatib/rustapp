@@ -1,4 +1,5 @@
 use crate::config::urls::{get_database_url, get_products_service_url};
+use crate::db::{get_connection_pool, DbPool};
 use crate::models::product::{Product, ProductDto};
 use crate::models::user::{User, UserDto};
 use crate::repos::products_repo::ProductsRepo;
@@ -24,6 +25,9 @@ pub fn get_test_jwt(admin: bool) -> String {
     return String::from("Bearer ") + &token;
 }
 
+pub fn get_pool() -> DbPool {
+    get_connection_pool(get_database_url()).clone()
+}
 #[allow(dead_code)]
 pub async fn add_test_user(permissions: Vec<&str>) -> User {
     let username = String::from("testuser") + &gen_random_string();
@@ -38,8 +42,8 @@ pub async fn add_test_user(permissions: Vec<&str>) -> User {
         first_name,
         last_name,
     };
-    let database_url = get_database_url();
-    let users_repo = UsersRepo::new(database_url);
+    
+    let users_repo = UsersRepo::new(get_pool());
     let created_user = users_repo.create_user(user).await.expect("unable to seed test user");
     return created_user;
 }
