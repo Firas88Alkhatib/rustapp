@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod user_endpoints_tests {
+mod products_endpoints_tests {
     use crate::app;
     use crate::models::product::{Product, ProductDto};
     use crate::tests::utils::{add_test_product, gen_random_string, get_test_jwt};

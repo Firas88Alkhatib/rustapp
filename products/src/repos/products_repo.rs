@@ -6,15 +6,14 @@ use crate::schema::products::dsl::products as DbProducts;
 use crate::schema::productscategories::dsl::productscategories as DbProductsCategories;
 use diesel::{result::Error, BelongingToDsl, QueryDsl, RunQueryDsl, Table};
 
-use crate::db::{get_connection_pool, DbConnection, DbPool};
+use crate::db::{DbConnection, DbPool};
 
 pub struct ProductsRepo {
     connection_pool: DbPool,
 }
 
 impl ProductsRepo {
-    pub fn new(database_url: String) -> Self {
-        let connection_pool = get_connection_pool(database_url);
+    pub fn new(connection_pool: DbPool) -> Self {
         return Self { connection_pool };
     }
     fn get_connection(&self) -> DbConnection {

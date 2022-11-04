@@ -1,16 +1,14 @@
-
 use crate::models::categories::{Category, CategoryInDto, CategoryOutDto, NewCategory};
 use crate::schema::categories::dsl::categories;
 use diesel::{result::Error, QueryDsl, RunQueryDsl};
 
-use crate::db::{get_connection_pool, DbConnection, DbPool};
+use crate::db::{DbConnection, DbPool};
 pub struct CategoriesRepo {
     connection_pool: DbPool,
 }
 
 impl CategoriesRepo {
-    pub fn new(database_url: String) -> Self {
-        let connection_pool = get_connection_pool(database_url);
+    pub fn new(connection_pool: DbPool) -> Self {
         return Self { connection_pool };
     }
     fn get_connection(&self) -> DbConnection {

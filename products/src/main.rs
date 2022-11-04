@@ -13,18 +13,20 @@ mod routes;
 mod schema;
 
 use crate::config::urls::get_database_url;
+use crate::db::get_connection_pool;
 use crate::repos::{categories_repo::CategoriesRepo, products_repo::ProductsRepo, Repositories};
 use crate::routes::{get_categories_routes, get_products_routes};
 
 #[actix_web::main]
 async fn main() -> Result<()> {
+    let database_url = get_database_url();
+    let connection_pool = get_connection_pool(database_url.clone());
     HttpServer::new(move || {
-        let database_url = get_database_url();
         let products_routes = get_products_routes();
         let categories_routes = get_categories_routes();
         let repositories = Data::new(Repositories {
-            products_repo: ProductsRepo::new(database_url.clone()),
-            categories_repo: CategoriesRepo::new(database_url.clone()),
+            products_repo: ProductsRepo::new(connection_pool.clone()),
+            categories_repo: CategoriesRepo::new(connection_pool.clone()),
         });
 
         App::new()

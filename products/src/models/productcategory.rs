@@ -10,8 +10,8 @@ pub struct NewProductCategory<'a> {
     pub category_id: &'a i32,
 }
 #[derive(Identifiable, Deserialize, Serialize, Debug, Queryable, AsChangeset, Associations)]
-#[belongs_to(Product)]
-#[belongs_to(Category)]
+#[diesel(belongs_to(Product))]
+#[diesel(belongs_to(Category))]
 #[diesel(table_name = productscategories)]
 pub struct ProductCategory {
     pub id: i32,
