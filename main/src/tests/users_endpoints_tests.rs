@@ -2,8 +2,9 @@
 mod user_endpoints_tests {
 
     use crate::app;
+    use crate::models::role::Role;
     use crate::models::user::UserDto;
-    use crate::tests::utils::{add_test_user, gen_random_string, get_pool, get_test_jwt};
+    use crate::tests::utils::{add_test_user, gen_random_string, get_pool, get_test_jwt, Roles};
     use actix_web::{http::header, test};
     use serde::{Deserialize, Serialize};
 
@@ -11,7 +12,7 @@ mod user_endpoints_tests {
     struct TestUser {
         pub id: i32,
         pub username: String,
-        pub roles: Vec<String>,
+        pub roles: Vec<Role>,
         pub first_name: String,
         pub last_name: String,
     }
@@ -22,7 +23,10 @@ mod user_endpoints_tests {
         let password = String::from("password") + &gen_random_string();
         let first_name = String::from("first name") + &gen_random_string();
         let last_name = String::from("last name") + &gen_random_string();
-        let roles = vec![String::from("ROLE_USER")];
+        let roles = vec![Role {
+            id: 2,
+            name: String::from("ROLE_USER"),
+        }];
         let test_user = UserDto {
             username: username.clone(),
             password: password.clone(),
@@ -56,12 +60,12 @@ mod user_endpoints_tests {
         assert_eq!(result.username, username, "usernames should be identicals");
         assert_eq!(result.first_name, first_name, "first names should be identicals");
         assert_eq!(result.last_name, last_name, "last names should be identicals");
-        assert_eq!(result.roles, roles, "roles should be identicals");
+        assert_eq!(result.roles[0].name, roles[0].name, "roles should be identicals");
     }
     #[actix_web::test]
     async fn test_get_all_users() {
-        let user1 = add_test_user(vec!["ROLE_ADMIN", "ROLE_USER"]).await;
-        let user2 = add_test_user(vec!["ROLE_ADMIN", "ROLE_USER"]).await;
+        let user1 = add_test_user(Roles::User).await;
+        let user2 = add_test_user(Roles::User).await;
         let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = "/users";
@@ -96,7 +100,7 @@ mod user_endpoints_tests {
 
     #[actix_web::test]
     async fn test_get_single_user() {
-        let user = add_test_user(vec!["ROLE_USER"]).await;
+        let user = add_test_user(Roles::User).await;
         let app = test::init_service(app::init_app(get_pool())).await;
 
         let url = format!("/users/{}", user.id);
@@ -122,7 +126,7 @@ mod user_endpoints_tests {
     }
     #[actix_web::test]
     async fn test_update_user() {
-        let test_user = add_test_user(vec!["ROLE_USER"]).await;
+        let test_user = add_test_user(Roles::User).await;
         let updated_first_name = String::from("first name") + &gen_random_string();
 
         let updated_user = TestUser {
@@ -160,7 +164,7 @@ mod user_endpoints_tests {
     }
     #[actix_web::test]
     async fn test_delete_user() {
-        let test_user = add_test_user(vec!["ROLE_USER"]).await;
+        let test_user = add_test_user(Roles::User).await;
 
         let app = test::init_service(app::init_app(get_pool())).await;
 

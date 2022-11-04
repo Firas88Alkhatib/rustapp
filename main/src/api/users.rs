@@ -1,5 +1,5 @@
 use crate::error_handle::RepositoryError;
-use crate::models::user::{UpdateUserDto, User, UserDto};
+use crate::models::user::{UpdateUserDto, User, UserDto, UserOutDto};
 use crate::repos::Repositories;
 use actix_web::{
     delete, get, post, put,
@@ -10,21 +10,21 @@ use actix_web_grants::proc_macro::has_roles;
 
 #[post("")]
 #[has_roles("ADMIN")]
-pub async fn create_user(repos: Data<Repositories>, user: Json<UserDto>) -> Result<Json<User>, RepositoryError> {
+pub async fn create_user(repos: Data<Repositories>, user: Json<UserDto>) -> Result<Json<UserOutDto>, RepositoryError> {
     let new_user = repos.users_repo.create_user(user.into_inner()).await?;
     Ok(Json(new_user))
 }
 
 #[get("")]
 #[has_roles("ADMIN")]
-pub async fn get_all_users(repos: Data<Repositories>) -> Result<Json<Vec<User>>, RepositoryError> {
+pub async fn get_all_users(repos: Data<Repositories>) -> Result<Json<Vec<UserOutDto>>, RepositoryError> {
     let result_users = repos.users_repo.get_all_users().await?;
     return Ok(Json(result_users));
 }
 
 #[get("/{id}")]
 #[has_roles("ADMIN")]
-pub async fn get_user(repos: Data<Repositories>, path: Path<i32>) -> Result<Json<User>, RepositoryError> {
+pub async fn get_user(repos: Data<Repositories>, path: Path<i32>) -> Result<Json<UserOutDto>, RepositoryError> {
     let user_id: i32 = path.into_inner();
     let user = repos.users_repo.get_user(user_id).await?;
     return Ok(Json(user));

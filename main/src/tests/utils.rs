@@ -1,7 +1,8 @@
 use crate::config::urls::{get_database_url, get_products_service_url};
 use crate::db::{get_connection_pool, DbPool};
-use crate::models::product::{Product, ProductDto};
-use crate::models::user::{User, UserDto};
+use crate::models::product::{Category, Product, ProductDto};
+use crate::models::role::Role;
+use crate::models::user::{UserDto, UserOutDto};
 use crate::repos::products_repo::ProductsRepo;
 use crate::repos::users_repo::UsersRepo;
 use crate::services::authentication_service::{create_jwt, Claims};
@@ -29,12 +30,33 @@ pub fn get_pool() -> DbPool {
     get_connection_pool(get_database_url()).clone()
 }
 #[allow(dead_code)]
-pub async fn add_test_user(permissions: Vec<&str>) -> User {
+pub enum Roles {
+    Admin,
+    User,
+}
+#[allow(dead_code)]
+pub async fn add_test_user(role: Roles) -> UserOutDto {
     let username = String::from("testuser") + &gen_random_string();
     let password = String::from("testpassword") + &gen_random_string();
     let first_name = String::from("first name") + &gen_random_string();
     let last_name = String::from("last name") + &gen_random_string();
-    let roles = permissions.iter().map(|s| s.to_string()).collect();
+
+    let roles = match role {
+        Roles::Admin => vec![
+            Role {
+                id: 1,
+                name: String::from("ROLE_ADMIN"),
+            },
+            Role {
+                id: 2,
+                name: String::from("ROLE_USER"),
+            },
+        ],
+        Roles::User => vec![Role {
+            id: 2,
+            name: String::from("ROLE_USER"),
+        }],
+    };
     let user = UserDto {
         username,
         password,
@@ -42,9 +64,10 @@ pub async fn add_test_user(permissions: Vec<&str>) -> User {
         first_name,
         last_name,
     };
-    
+
     let users_repo = UsersRepo::new(get_pool());
     let created_user = users_repo.create_user(user).await.expect("unable to seed test user");
+
     return created_user;
 }
 #[allow(dead_code)]
@@ -53,7 +76,15 @@ pub async fn add_test_product() -> Product {
     let products_repo = ProductsRepo::new(products_service_url);
     let name = String::from("testname") + &gen_random_string();
     let description = String::from("testdesc") + &gen_random_string();
-    let product = ProductDto { name, description };
+    let categories = vec![Category {
+        id: 1,
+        name: String::from("test"),
+    }];
+    let product = ProductDto {
+        name,
+        description,
+        categories,
+    };
     let created_product = products_repo.create_product(product).await.expect("unable to create test product");
     return created_product;
 }
