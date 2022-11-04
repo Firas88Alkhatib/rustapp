@@ -8,7 +8,7 @@ use actix_web::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::repos::users_repo::UsersRepo;
+use crate::repos::Repositories;
 
 #[derive(Serialize, Deserialize)]
 pub struct LoginDto {
@@ -17,9 +17,9 @@ pub struct LoginDto {
 }
 
 #[post("")]
-pub async fn login(users_repo: Data<UsersRepo>, login_dto: Json<LoginDto>) -> Result<String, ActixError> {
+pub async fn login(repos: Data<Repositories>, login_dto: Json<LoginDto>) -> Result<String, ActixError> {
     let login = login_dto.into_inner();
-    let db_user = users_repo.get_user_by_username(login.username).await?;
+    let db_user = repos.users_repo.get_user_by_username(login.username).await?;
     let is_valid = verify_password(db_user.password, login.password).expect("Failed to decode password hash ");
     if !is_valid {
         return Err(ErrorUnauthorized("invalid credentials"));
