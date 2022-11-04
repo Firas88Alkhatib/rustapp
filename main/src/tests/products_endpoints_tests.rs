@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod products_endpoints_tests {
     use crate::app;
-    use crate::models::product::{Product, ProductDto};
+    use crate::models::product::{Category, Product, ProductDto};
     use crate::tests::utils::{add_test_product, gen_random_string, get_pool, get_test_jwt};
     use actix_web::{http::header, test};
 
@@ -9,7 +9,15 @@ mod products_endpoints_tests {
     async fn test_create_product() {
         let name = String::from("testname") + &gen_random_string();
         let description = String::from("testdesc") + &gen_random_string();
-        let product = ProductDto { name, description };
+        let categories = vec![Category {
+            id: 1,
+            name: String::from("test"),
+        }];
+        let product = ProductDto {
+            name,
+            description,
+            categories,
+        };
 
         let app = test::init_service(app::init_app(get_pool())).await;
 
@@ -84,10 +92,15 @@ mod products_endpoints_tests {
     async fn test_update_product() {
         let product = add_test_product().await;
         let updated_name = String::from("name") + &gen_random_string();
+        let categories = vec![Category {
+            id: 1,
+            name: String::from("test"),
+        }];
         let updated_product = Product {
             id: product.id,
             name: updated_name.clone(),
             description: product.description.clone(),
+            categories,
         };
 
         let app = test::init_service(app::init_app(get_pool())).await;
