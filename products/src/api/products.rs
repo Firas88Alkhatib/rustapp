@@ -1,5 +1,5 @@
 use crate::error_handle::DatabaseError;
-use crate::models::products::{Product, ProductInDto};
+use crate::models::products::{Product, ProductInDto, ProductOutDto};
 use crate::repos::Repositories;
 use actix_web::{
     delete, get, post, put,
@@ -9,19 +9,20 @@ use actix_web::{
 use diesel::result::Error;
 
 #[post("")]
-pub async fn create_product(repos: Data<Repositories>, product: Json<ProductInDto>) -> Result<Json<Product>, DatabaseError> {
+pub async fn create_product(repos: Data<Repositories>, product: Json<ProductInDto>) -> Result<Json<ProductOutDto>, DatabaseError> {
     let new_product = repos.products_repo.create_product(product.into_inner()).await?;
-    Ok(Json(new_product))
+    let result = repos.products_repo.get_product(new_product.id).await?;
+    Ok(Json(result))
 }
 
 #[get("")]
-pub async fn get_all_products(repos: Data<Repositories>) -> Result<Json<Vec<Product>>, DatabaseError> {
+pub async fn get_all_products(repos: Data<Repositories>) -> Result<Json<Vec<ProductOutDto>>, DatabaseError> {
     let result_products = repos.products_repo.get_all_products().await?;
     return Ok(Json(result_products));
 }
 
 #[get("/{id}")]
-pub async fn get_product(repos: Data<Repositories>, path: Path<i32>) -> Result<Json<Product>, DatabaseError> {
+pub async fn get_product(repos: Data<Repositories>, path: Path<i32>) -> Result<Json<ProductOutDto>, DatabaseError> {
     let product_id: i32 = path.into_inner();
     let product = repos.products_repo.get_product(product_id).await?;
     return Ok(Json(product));

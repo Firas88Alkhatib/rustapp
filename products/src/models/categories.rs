@@ -8,7 +8,7 @@ pub struct NewCategory<'a> {
     pub name: &'a String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Queryable, AsChangeset)]
+#[derive(Identifiable, Deserialize, Serialize, Debug, Queryable, AsChangeset, Clone)]
 #[diesel(table_name = categories)]
 pub struct Category {
     pub id: i32,
