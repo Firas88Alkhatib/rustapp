@@ -11,6 +11,7 @@ services:
     working_dir: /app
     volumes:
       - ../main:/app/
+      - /app/target
       - ./wait_for_db.sh:/utils/wait_for_db.sh
     # cargo watch is very slow in docker
     # command: sh -c "diesel migration run && cargo watch -q -c -x run"
@@ -49,6 +50,7 @@ services:
     working_dir: /app
     volumes:
       - ../products:/app/
+      - /app/target
       - ./wait_for_db.sh:/utils/wait_for_db.sh
     # cargo watch is very slow in docker
     # command: sh -c "diesel migration run && cargo watch -q -c -x run"
