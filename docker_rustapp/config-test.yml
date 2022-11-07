@@ -1,7 +1,7 @@
 version: "3.9"
 services:
-  rust-main-test:
-    container_name: RustMainTest
+  main-test:
+    container_name: MainServiceTest
     build:
       context: ../main/
       dockerfile: ../docker_rustapp/Dockerfile
@@ -10,25 +10,49 @@ services:
     working_dir: /app
     volumes:
       - ../main:/app/
-    command: sh -c "diesel migration run && cargo test"
+      - ./wait_for_db.sh:/utils/wait_for_db.sh
+    command: sh -c "/utils/wait_for_db.sh MainServiceTestDb 5432 && diesel migration run && cargo test"
     environment:
-      - DATABASE_URL=postgres://testUser:testPassword@PostgresTestDb/rustmaintest
+      - DATABASE_URL=postgres://testUser:testPassword@MainServiceTestDb/rustmaintest
     depends_on:
-      - test-db
+      - main-test-db
     networks:
       - rustapp-test-network
-  test-db:
-    container_name: PostgresTestDb
+  main-test-db:
+    container_name: MainServiceTestDb
     image: postgres
     environment:
       - POSTGRES_USER=testUser
       - POSTGRES_PASSWORD=testPassword
       - POSTGRES_DB=rustmaintest
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U testUser -d rustmaintest"]
-      interval: 5s
-      timeout: 4s
-      retries: 5
+    networks:
+      - rustapp-test-network
+  # products service
+  products-service-test:
+    container_name: ProductsServiceTest
+    build:
+      context: ../products/
+      dockerfile: ../docker_rustapp/Dockerfile
+    ports:
+      - 5001:5001
+    working_dir: /app
+    volumes:
+      - ../products:/app/
+      - ./wait_for_db.sh:/utils/wait_for_db.sh
+    command: sh -c "/utils/wait_for_db.sh ProductsServiceTestDb 5432 && diesel migration run && cargo run"
+    environment:
+      - DATABASE_URL=postgres://testUser:testPassword@ProductsServiceTestDb/rustproductstest
+    depends_on:
+      - test-db
+    networks:
+      - rustapp-test-network
+  test-db:
+    container_name: ProductsServiceTestDb
+    image: postgres
+    environment:
+      - POSTGRES_USER=testUser
+      - POSTGRES_PASSWORD=testPassword
+      - POSTGRES_DB=rustproductstest
     networks:
       - rustapp-test-network
 networks:

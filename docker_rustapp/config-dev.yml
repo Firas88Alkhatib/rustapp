@@ -11,15 +11,17 @@ services:
     working_dir: /app
     volumes:
       - ../main:/app/
+      - ./wait_for_db.sh:/utils/wait_for_db.sh
     # cargo watch is very slow in docker
     # command: sh -c "diesel migration run && cargo watch -q -c -x run"
-    command: sh -c "diesel migration run && cargo run"
+    command: sh -c "/utils/wait_for_db.sh MainDb 5432 && diesel migration run && cargo run"
     environment:
       - DATABASE_URL=postgres://mainUser:mainPassword@MainDb/rustMain
       - PRODUCTS_URL=http://RustProductsService:5001/products
     depends_on:
-      main-db:
-        condition: service_healthy
+      - main-db
+      # main-db:
+      #   condition: service_healthy
     networks:
       - rustapp-network
   main-db:
@@ -29,11 +31,11 @@ services:
       - POSTGRES_USER=mainUser
       - POSTGRES_PASSWORD=mainPassword
       - POSTGRES_DB=rustMain
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mainUser -d rustMain"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # healthcheck:
+    #   test: ["CMD-SHELL", "pg_isready -U mainUser -d rustMain"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
     networks:
       - rustapp-network
   # products service
@@ -47,14 +49,16 @@ services:
     working_dir: /app
     volumes:
       - ../products:/app/
+      - ./wait_for_db.sh:/utils/wait_for_db.sh
     # cargo watch is very slow in docker
     # command: sh -c "diesel migration run && cargo watch -q -c -x run"
-    command: sh -c "diesel migration run && cargo run"
+    command: sh -c "/utils/wait_for_db.sh ProductsDb 5432 && diesel migration run && cargo run"
     environment:
       - DATABASE_URL=postgres://productsUser:productsPassword@ProductsDb/rustProducts
     depends_on:
-      products-db:
-        condition: service_healthy
+      - products-db
+      # products-db:
+      #   condition: service_healthy
     networks:
       - rustapp-network
   products-db:
@@ -64,11 +68,11 @@ services:
       - POSTGRES_USER=productsUser
       - POSTGRES_PASSWORD=productsPassword
       - POSTGRES_DB=rustProducts
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U productsUser -d rustProducts"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # healthcheck:
+    #   test: ["CMD-SHELL", "pg_isready -U productsUser -d rustProducts"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
     networks:
       - rustapp-network
 networks:
