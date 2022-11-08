@@ -29,9 +29,14 @@ pub async fn get_product(repos: Data<Repositories>, path: Path<i32>) -> Result<J
 }
 
 #[put("/{id}")]
-pub async fn update_product(repos: Data<Repositories>, path: Path<i32>, product: Json<Product>) -> Result<Json<Product>, DatabaseError> {
+pub async fn update_product(
+    repos: Data<Repositories>,
+    path: Path<i32>,
+    product: Json<Product>,
+) -> Result<Json<ProductOutDto>, DatabaseError> {
     let updated_product = repos.products_repo.update_product(path.into_inner(), product.into_inner()).await?;
-    return Ok(Json(updated_product));
+    let result = repos.products_repo.get_product(updated_product.id).await?;
+    return Ok(Json(result));
 }
 
 #[delete("/{id}")]

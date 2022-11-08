@@ -1,4 +1,4 @@
-use crate::models::categories::{Category, CategoryInDto, CategoryOutDto, NewCategory};
+use crate::models::categories::{Category, CategoryInDto, NewCategory};
 use crate::schema::categories::dsl::categories;
 use diesel::{result::Error, QueryDsl, RunQueryDsl};
 

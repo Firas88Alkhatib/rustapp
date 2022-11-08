@@ -32,7 +32,7 @@ pub async fn get_user(repos: Data<Repositories>, path: Path<i32>) -> Result<Json
 
 #[put("/{id}")]
 #[has_roles("ADMIN")]
-pub async fn update_user(repos: Data<Repositories>, path: Path<i32>, user: Json<UpdateUserDto>) -> Result<Json<User>, RepositoryError> {
+pub async fn update_user(repos: Data<Repositories>, path: Path<i32>, user: Json<UpdateUserDto>) -> Result<Json<UserOutDto>, RepositoryError> {
     let user_id = path.into_inner();
     let db_user = repos.users_repo.get_user(user_id).await?;
     let user_to_update = User {
@@ -43,7 +43,8 @@ pub async fn update_user(repos: Data<Repositories>, path: Path<i32>, user: Json<
         password: db_user.password,
     };
     let updated_user = repos.users_repo.update_user(user_id, user_to_update).await?;
-    return Ok(Json(updated_user));
+    let result = repos.users_repo.get_user(updated_user.id).await?;
+    return Ok(Json(result));
 }
 
 #[delete("/{id}")]

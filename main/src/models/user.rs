@@ -45,8 +45,6 @@ pub struct UserOutDto {
 pub struct UpdateUserDto {
     pub id: i32,
     pub username: String,
-    pub password: Option<String>,
-    pub roles: Vec<String>,
     pub first_name: String,
     pub last_name: String,
 }
