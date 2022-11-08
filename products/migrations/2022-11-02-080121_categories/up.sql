@@ -5,3 +5,5 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         name VARCHAR NOT NULL
     );
+
+INSERT INTO categories (id,name) VALUES (1,'test') 

@@ -10,10 +10,12 @@ services:
     working_dir: /app
     volumes:
       - ../main:/app/
+      - /app/target
       - ./wait_for_db.sh:/utils/wait_for_db.sh
-    command: sh -c "/utils/wait_for_db.sh MainServiceTestDb 5432 && diesel migration run && cargo test"
+    command: sh -c "/utils/wait_for_db.sh MainServiceTestDb 5432 && /utils/wait_for_db.sh ProductsServiceTest 5001 && diesel migration run && cargo test"
     environment:
       - DATABASE_URL=postgres://testUser:testPassword@MainServiceTestDb/rustmaintest
+      - PRODUCTS_URL=http://ProductsServiceTest:5001/products
     depends_on:
       - main-test-db
     networks:
@@ -38,6 +40,7 @@ services:
     working_dir: /app
     volumes:
       - ../products:/app/
+      - /app/target
       - ./wait_for_db.sh:/utils/wait_for_db.sh
     command: sh -c "/utils/wait_for_db.sh ProductsServiceTestDb 5432 && diesel migration run && cargo run"
     environment:
